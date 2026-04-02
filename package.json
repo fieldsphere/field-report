@@ -1,0 +1,30 @@
+{
+  "name": "gong-summary",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "gong:select": "node scripts/select-calls.mjs",
+    "gong:extract": "node scripts/extract-feedback.mjs",
+    "gong:prepare:run": "node scripts/prepare-feedback-run.mjs",
+    "gong:extract:call": "node scripts/extract-feedback-call.mjs",
+    "gong:merge:shards": "node scripts/merge-feedback-shards.mjs",
+    "gong:weekly-feedback": "bash .cursor/skills/gong/weekly-feedback-run/scripts/run-weekly-feedback.sh",
+    "notion:plugin-request": "node scripts/publish-plugin-request-to-notion.mjs",
+    "notion:plugin-request:publish": "node scripts/publish-plugin-request-to-notion.mjs --title \"config driven plugins\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@ai-sdk/gateway": "^3.0.83",
+    "@notionhq/client": "^5.15.0",
+    "@supabase/supabase-js": "^2.101.1",
+    "@vercel/oidc": "^3.2.0",
+    "ai": "^6.0.141",
+    "dotenv": "^17.3.1",
+    "zod": "^4.3.6"
+  }
+}

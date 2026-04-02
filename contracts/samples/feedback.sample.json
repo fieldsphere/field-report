@@ -1,0 +1,56 @@
+{
+  "generatedAt": "2026-03-30T17:00:00.000Z",
+  "modelUsed": "anthropic/claude-sonnet-4-20250514",
+  "callsProcessed": 2,
+  "totalFeedbackItems": 3,
+  "items": [
+    {
+      "callId": "8176408509089213022",
+      "callTitle": "Cursor // Rivian VW Tech Sync",
+      "callDate": "2026-03-23",
+      "gongUrl": "https://us-4796.app.gong.io/call?id=8176408509089213022",
+      "fieldEngineer": "Ryan Sudhakaran",
+      "customerAccount": "Rivian VW",
+      "feedbackType": "Feature Request",
+      "summary": "Customer wants per-workspace model configuration so different teams can use different default models.",
+      "verbatimQuote": "It would be really helpful if each team could pick their own default model instead of having one global setting.",
+      "severity": "Medium",
+      "evidenceSpeaker": "Alex Chen",
+      "evidenceTimestamp": "14:22",
+      "confidence": "High",
+      "dedupeKey": "8176408509089213022:a1b2c3d4"
+    },
+    {
+      "callId": "8176408509089213022",
+      "callTitle": "Cursor // Rivian VW Tech Sync",
+      "callDate": "2026-03-23",
+      "gongUrl": "https://us-4796.app.gong.io/call?id=8176408509089213022",
+      "fieldEngineer": "Ryan Sudhakaran",
+      "customerAccount": "Rivian VW",
+      "feedbackType": "Bug Report",
+      "summary": "Autocomplete freezes in files larger than 5000 lines.",
+      "verbatimQuote": "When I open our main config file which is like 6000 lines, autocomplete just completely freezes.",
+      "severity": "High",
+      "evidenceSpeaker": "Alex Chen",
+      "evidenceTimestamp": "21:05",
+      "confidence": "High",
+      "dedupeKey": "8176408509089213022:e5f6g7h8"
+    },
+    {
+      "callId": "8011697136804677923",
+      "callTitle": "Cursor <> Certara - Model Selection 101",
+      "callDate": "2026-03-23",
+      "gongUrl": "https://us-4796.app.gong.io/call?id=8011697136804677923",
+      "fieldEngineer": "Joseph Yang",
+      "customerAccount": "Certara",
+      "feedbackType": "Praise",
+      "summary": "Customer reports that agent mode has dramatically improved their team's productivity.",
+      "verbatimQuote": "The team loves the new agent mode, it's probably saved us two to three hours a day per developer.",
+      "severity": "Low",
+      "evidenceSpeaker": "David Park",
+      "evidenceTimestamp": "08:15",
+      "confidence": "High",
+      "dedupeKey": "8011697136804677923:i9j0k1l2"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "generatedAt": "2026-03-30T16:10:12.803Z",
+  "filter": {
+    "fromDateTime": "2026-03-23T16:10:12.803Z",
+    "toDateTime": "2026-03-30T16:10:12.803Z",
+    "partyTitleSubstring": "Field Engineer"
+  },
+  "totalCalls": 725,
+  "matched": 2,
+  "calls": [
+    {
+      "callId": "8176408509089213022",
+      "title": "Cursor // Rivian VW Tech Sync",
+      "started": "2026-03-23T10:30:35-07:00",
+      "duration": 1800,
+      "gongUrl": "https://us-4796.app.gong.io/call?id=8176408509089213022",
+      "scope": "External",
+      "parties": [
+        {
+          "name": "Alex Chen",
+          "title": "Staff Software Engineer",
+          "affiliation": "External",
+          "speakerId": "1111111111111111111"
+        },
+        {
+          "name": "Ryan Sudhakaran",
+          "title": "Field Engineer",
+          "affiliation": "Internal",
+          "speakerId": "2222222222222222222"
+        },
+        {
+          "name": "Sarah Kim",
+          "title": "Commercial Account Executive",
+          "affiliation": "Internal",
+          "speakerId": "3333333333333333333"
+        }
+      ],
+      "matchedParticipants": [
+        {
+          "name": "Ryan Sudhakaran",
+          "title": "Field Engineer"
+        }
+      ]
+    },
+    {
+      "callId": "8011697136804677923",
+      "title": "Cursor <> Certara - Model Selection 101",
+      "started": "2026-03-23T11:01:48-07:00",
+      "duration": 2400,
+      "gongUrl": "https://us-4796.app.gong.io/call?id=8011697136804677923",
+      "scope": "External",
+      "parties": [
+        {
+          "name": "David Park",
+          "title": "VP Engineering",
+          "affiliation": "External",
+          "speakerId": "4444444444444444444"
+        },
+        {
+          "name": "Joseph Yang",
+          "title": "Field Engineer",
+          "affiliation": "Internal",
+          "speakerId": "5555555555555555555"
+        }
+      ],
+      "matchedParticipants": [
+        {
+          "name": "Joseph Yang",
+          "title": "Field Engineer"
+        }
+      ]
+    }
+  ]
+}

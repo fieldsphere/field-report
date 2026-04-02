@@ -1,0 +1,11 @@
+# Gong API and local secrets — never commit
+.env
+.env.local
+.env.*.local
+
+.vercel
+.env*.local
+node_modules
+
+# Local run outputs and artifacts — never commit
+data/

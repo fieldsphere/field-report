@@ -1,0 +1,24 @@
+{
+  "generatedAt": "2026-03-30T17:00:00.000Z",
+  "modelUsed": "anthropic/claude-sonnet-4-20250514",
+  "callsProcessed": 2,
+  "totalFeedbackItems": 3,
+  "items": [
+    {
+      "callId": "8176408509089213022",
+      "callTitle": "Cursor // Rivian VW Tech Sync",
+      "callDate": "2026-03-23",
+      "gongUrl": "https://us-4796.app.gong.io/call?id=8176408509089213022",
+      "fieldEngineer": "Ryan Sudhakaran",
+      "customerAccount": "Rivian VW Tech Sync",
+      "feedbackType": "Feature Request",
+      "summary": "Customer asked for workspace-level default model settings for different teams.",
+      "verbatimQuote": "It would be really helpful if each team could pick their own default model.",
+      "severity": "Medium",
+      "evidenceSpeaker": "Alex Chen",
+      "evidenceTimestamp": "14:22",
+      "confidence": "High",
+      "dedupeKey": "8176408509089213022:a1b2c3d4"
+    }
+  ]
+}
