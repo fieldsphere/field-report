@@ -15,8 +15,12 @@ const projectRoot = resolve(__dirname, "..");
 const RUN_ID = process.env.RUN_ID?.trim() || "";
 const MAX_ITEMS = Math.max(1, Number(process.env.MAX_ITEMS ?? "1000") || 1000);
 const DRY_RUN = (process.env.DRY_RUN ?? "false") === "true";
-const SUPABASE_PROJECT_ID =
-  process.env.SUPABASE_PROJECT_ID?.trim() || "ivbdhcmphazjqajprept";
+const SUPABASE_PROJECT_ID = process.env.SUPABASE_PROJECT_ID?.trim();
+if (!SUPABASE_PROJECT_ID) {
+  throw new Error(
+    "Missing SUPABASE_PROJECT_ID. Set it in .env.local or environment.",
+  );
+}
 const NOTION_DATABASE_URL = process.env.NOTION_DATABASE_URL?.trim() || "";
 const NOTION_DATA_SOURCE_URL = process.env.NOTION_DATA_SOURCE_URL?.trim() || "";
 

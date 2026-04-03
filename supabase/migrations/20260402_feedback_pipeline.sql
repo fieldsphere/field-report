@@ -34,6 +34,10 @@ create table if not exists public.feedback_items (
   id uuid primary key default gen_random_uuid(),
   run_id text not null references public.feedback_runs(run_id) on delete cascade,
   call_id text not null,
+  -- Globally unique: callId + hash(normalizedQuote). If the same quote appears
+  -- in a later run, the upsert overwrites run_id/call_id/metadata on the
+  -- existing row. Per-run item counts may therefore differ from the row count
+  -- scoped to that run_id.
   dedupe_key text not null unique,
   summary text not null,
   feedback_type text not null,

@@ -16,7 +16,7 @@ Sync pending feedback items from Supabase into the Notion feedback database usin
 Optional:
 
 - `NOTION_DATABASE_URL` or `NOTION_DATA_SOURCE_URL`
-- `SUPABASE_PROJECT_ID` (default: `ivbdhcmphazjqajprept`)
+- `SUPABASE_PROJECT_ID` (required)
 - `DRY_RUN=true|false`
 - `MAX_ITEMS`
 
@@ -50,7 +50,7 @@ Optional:
 
 3. Load pending feedback items from Supabase with `execute_sql`.
    - Query `public.feedback_items`.
-   - Filter to `notion_page_id is null`.
+   - Filter to `notion_synced = false`.
    - If `RUN_ID` is set, also filter `run_id = '<RUN_ID>'`.
    - Order by `created_at asc`.
    - Apply `limit` using `MAX_ITEMS` if provided.
@@ -85,14 +85,14 @@ Optional:
      - `Dedupe Key` <- `dedupe_key`
 
 7. Write sync results back to Supabase with `execute_sql`.
-   - For Notion rows that already existed, set `notion_page_id = 'existing-in-notion'`.
-   - For newly created pages, set `notion_page_id` to the actual returned page ID.
+   - For Notion rows that already existed, set `notion_synced = true` (leave `notion_page_id` as NULL).
+   - For newly created pages, set `notion_synced = true` and `notion_page_id` to the actual returned page ID.
 
 ## Success criteria
 
 - All pending items for the target run are either:
-  - created in Notion and backfilled with a Notion page ID, or
-  - marked as `existing-in-notion` in Supabase.
+  - created in Notion and backfilled with a Notion page ID and `notion_synced = true`, or
+  - marked as `notion_synced = true` in Supabase (with `notion_page_id` left NULL for pre-existing Notion rows).
 - No duplicate rows are created in Notion for the same `Dedupe Key`.
 - The final response includes counts for:
   - loaded from Supabase

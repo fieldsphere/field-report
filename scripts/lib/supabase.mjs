@@ -6,7 +6,7 @@ function parseBool(value, defaultValue) {
 }
 
 export function writeSupabaseEnabled() {
-  return parseBool(process.env.WRITE_SUPABASE, true);
+  return parseBool(process.env.WRITE_SUPABASE, false);
 }
 
 export function writeLocalJsonEnabled() {
