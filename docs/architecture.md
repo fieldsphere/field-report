@@ -18,11 +18,17 @@ flowchart LR
     dedupe["Dedupe by Dedupe Key"]
     notionWrite["Create Notion rows via MCP"]
   end
+  subgraph phase4 [Phase4_SlackDigest]
+    distill["LLM ranks top N"]
+    slackPost["Post digest to Slack"]
+  end
   listCalls --> filterCalls
   filterCalls -->|"selected-calls.json"| fetchTranscript
   fetchTranscript --> llmExtract
-  llmExtract -->|"feedback.json"| dedupe
+  llmExtract -->|"Supabase"| dedupe
   dedupe --> notionWrite
+  llmExtract -->|"Supabase"| distill
+  distill --> slackPost
 ```
 
 ## Weekly Agent Workflow Entry
@@ -74,7 +80,7 @@ Freeze interfaces so phases build and test independently.
 - **Speakers:** Exclude internal Cursor voices by title before LLM; drop rows attributed to excluded speakers.
 - **Taxonomy:** `Feature Request`, `Bug Report`, `Friction`, `Complaint`, `Praise`, `Other`.
 - **Evidence (per item):** Summary, verbatim quote, best-effort speaker and timestamp, confidence.
-- **Dedupe:** `dedupeKey = callId + ":" + hash(normalizedQuote)`; within a call and across re-runs.
+- **Dedupe:** `dedupeKey = callId + ":" + hash(normalizedQuote)`; within a call and across re-runs. The `dedupe_key` constraint is globally unique — if the same quote surfaces in a later run, the upsert overwrites `run_id` and metadata on the existing row. Per-run item counts derived from `feedback_items` may therefore be lower than the extraction reported.
 - **Long transcripts:** Chunk with overlap, extract per chunk, merge by dedupe key.
 - **Output:** `data/feedback.json`; optional `data/processed-calls.json`.
 
@@ -92,9 +98,18 @@ Freeze interfaces so phases build and test independently.
 
 - **Input:** Supabase `feedback_items` rows, typically filtered to one `run_id`.
 - **Schema:** Title, call metadata, feedback and evidence fields, confidence, `Dedupe Key`.
-- **Dedupe:** Query Notion by `Dedupe Key` before insert; skip existing and backfill `notion_page_id` in Supabase.
+- **Dedupe:** Query Notion by `Dedupe Key` before insert; skip existing and set `notion_synced = true` in Supabase. New pages also get `notion_page_id` backfilled with the real Notion page ID.
 - **Dry-run:** Use `DRY_RUN=true node scripts/push-to-notion.mjs` to run the MCP sync flow without writes.
 - **Live sync:** Requires Notion MCP access plus Supabase MCP access.
+
+## Phase 4 - Slack Digest (`post-to-slack`)
+
+- **Input:** Supabase `feedback_items` rows for one `run_id`.
+- **Distillation:** Full batch sent to LLM (AI Gateway) with instructions to rank by product impact and pick the top N (default 5).
+- **Output:** Slack Block Kit message — narrative intro, ranked bullet list with severity/type badges and verbatim quotes, link to Notion database.
+- **Delivery:** `POST` to `SLACK_WEBHOOK_URL` (Incoming Webhook).
+- **Dry-run:** `DRY_RUN=true` prints the payload to stdout without posting.
+- **Env:** `SLACK_WEBHOOK_URL` (required), `SLACK_TOP_N` (default 5), `DISTILL_MODEL` (falls back to `EXTRACT_MODEL`).
 
 ## MVP and Scale-up
 
