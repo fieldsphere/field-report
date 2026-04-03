@@ -54,9 +54,9 @@ Weekly independence defaults:
 
 Freeze interfaces so phases build and test independently.
 
-- **Contracts** (`gong-summary/contracts/`): `selected-calls.md`, `feedback.md`, `feedback-run-shard.md`, `notion-schema.md`, `extraction-rubric.md`.
-- **Artifacts** (`gong-summary/data/`): `selected-calls.json` (selector), `feedback.json` (extractor).
-- **One-time setup** (`gong-summary/`): npm (AI SDK, schema validation); Vercel link + `vercel env pull` for AI Gateway; Notion auth for sync.
+- **Contracts** (`contracts/`): `selected-calls.md`, `feedback.md`, `feedback-run-shard.md`, `notion-schema.md`, `extraction-rubric.md`.
+- **Artifacts** (`data/`): `selected-calls.json` (selector), `feedback.json` (extractor).
+- **One-time setup** (repo root): npm (AI SDK, schema validation); Vercel link + `vercel env pull` for AI Gateway; Notion auth for sync.
 
 **Success:** Versioned stable contracts; 5–10 call run through selector → extractor → sync; taxonomy, evidence quality, and dedupe pass manual review.
 
@@ -65,7 +65,7 @@ Freeze interfaces so phases build and test independently.
 - **Inputs:** Gong credentials (`GONG_ACCESS_KEY` + secret); optional `DAYS`, `PARTY_TITLE_SUBSTRING`, `LIMIT_CALLS`.
 - **API:** `POST /v2/calls/extensive` with pagination cursor.
 - **Filter:** Keep calls where any `parties[].title` contains `Field Engineer` (case-insensitive); output includes full `parties[]` and `matchedParticipants[]`.
-- **Output:** `gong-summary/data/selected-calls.json` — metadata (`generatedAt`, date filter, totals); calls (`callId`, title, started, duration, URL, scope, parties).
+- **Output:** `data/selected-calls.json` — metadata (`generatedAt`, date filter, totals); calls (`callId`, title, started, duration, URL, scope, parties).
 - **Failure:** Hard fail on missing credentials, non-200, malformed JSON, or runaway pagination.
 
 ## Phase 2 - Transcript + Feedback Extraction (`gong-feedback-extractor`)
@@ -76,7 +76,7 @@ Freeze interfaces so phases build and test independently.
 - **Evidence (per item):** Summary, verbatim quote, best-effort speaker and timestamp, confidence.
 - **Dedupe:** `dedupeKey = callId + ":" + hash(normalizedQuote)`; within a call and across re-runs.
 - **Long transcripts:** Chunk with overlap, extract per chunk, merge by dedupe key.
-- **Output:** `gong-summary/data/feedback.json`; optional `gong-summary/data/processed-calls.json`.
+- **Output:** `data/feedback.json`; optional `data/processed-calls.json`.
 
 ### Phase 2b - Per-call Fan-out + Merge (`gong-weekly-feedback-run`)
 

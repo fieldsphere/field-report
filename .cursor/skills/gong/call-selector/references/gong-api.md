@@ -39,4 +39,4 @@ Uses `GONG_API_BASE_URL` when set (for example `https://us-XXXX.api.gong.io/v2`)
 
 ## Output artifact
 
-- `gong-summary/data/selected-calls.json`
+- `data/selected-calls.json`

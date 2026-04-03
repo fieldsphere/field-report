@@ -10,11 +10,11 @@ Use this as the top-level entry point for the weekly Gong workflow.
 ## What this workflow owns
 
 - Runs call selection for the week.
-- Prepares a run manifest and per-call input shards under `gong-summary/data/runs/<runId>/`.
+- Prepares a run manifest and per-call input shards under `data/runs/<runId>/`.
 - Launches one worker agent per call (`.cursor/agents/gong-feedback-call-agent.md`).
 - Launches a final Notion sync agent when feedback should be published (`.cursor/agents/gong-feedback-notion-sync-agent.md`).
-- Merges shard outputs into `gong-summary/data/runs/<runId>/feedback.json` by default.
-- Stores the selected-call payload under `gong-summary/data/runs/<runId>/selected-calls.json`.
+- Merges shard outputs into `data/runs/<runId>/feedback.json` by default.
+- Stores the selected-call payload under `data/runs/<runId>/selected-calls.json`.
 - Keeps weeks isolated by default (no `processed-calls.json` read/write).
 - Uses Supabase as the source of truth for Notion sync.
 
@@ -22,11 +22,11 @@ Use this as the top-level entry point for the weekly Gong workflow.
 
 From repo root:
 
-- `bash gong-summary/.cursor/skills/gong/weekly-feedback-run/scripts/run-weekly-feedback.sh`
+- `bash .cursor/skills/gong/weekly-feedback-run/scripts/run-weekly-feedback.sh`
 
 ## Required environment
 
-- Gong credentials in `gong-summary/.env` / `.env.local`:
+- Gong credentials in `.env` / `.env.local`:
   - `GONG_ACCESS_KEY`
   - `GONG_ACCESS_SECRET` or `GONG_ACCESS_KEY_SECRET`
 - Date window defaults to previous full Sunday -> Sunday (UTC). Optional:
@@ -36,25 +36,25 @@ From repo root:
 ## Typical run sequence
 
 1. Initialize run:
-   - `bash gong-summary/.cursor/skills/gong/weekly-feedback-run/scripts/run-weekly-feedback.sh`
+   - `bash .cursor/skills/gong/weekly-feedback-run/scripts/run-weekly-feedback.sh`
 2. Read manifest:
-   - `gong-summary/data/runs/<runId>/manifest.json`
+   - `data/runs/<runId>/manifest.json`
 3. Fan out one agent per manifest call:
    - Agent prompt should run:
-     - `RUN_ID=<runId> CALL_ID=<callId> node gong-summary/scripts/extract-feedback-call.mjs`
+     - `RUN_ID=<runId> CALL_ID=<callId> node scripts/extract-feedback-call.mjs`
 4. Finalize once all shard files are present:
-   - `RUN_ID=<runId> UPDATE_PROCESSED_CALLS=false node gong-summary/scripts/merge-feedback-shards.mjs`
+   - `RUN_ID=<runId> UPDATE_PROCESSED_CALLS=false node scripts/merge-feedback-shards.mjs`
 5. Sync this weekly run directly to Notion via MCP:
-   - `RUN_ID=<runId> node gong-summary/scripts/push-to-notion.mjs`
+   - `RUN_ID=<runId> node scripts/push-to-notion.mjs`
 6. Optional canonical publish:
-   - `RUN_ID=<runId> WRITE_CANONICAL_FEEDBACK=true node gong-summary/scripts/merge-feedback-shards.mjs`
+   - `RUN_ID=<runId> WRITE_CANONICAL_FEEDBACK=true node scripts/merge-feedback-shards.mjs`
 
 ## Output contract
 
-- Shards: `gong-summary/data/runs/<runId>/calls/<callId>.json`
-- Weekly merged output: `gong-summary/data/runs/<runId>/feedback.json`
-- Weekly selected calls snapshot: `gong-summary/data/runs/<runId>/selected-calls.json`
-- Optional canonical output: `gong-summary/data/feedback.json`
+- Shards: `data/runs/<runId>/calls/<callId>.json`
+- Weekly merged output: `data/runs/<runId>/feedback.json`
+- Weekly selected calls snapshot: `data/runs/<runId>/selected-calls.json`
+- Optional canonical output: `data/feedback.json`
 - Source of truth: Supabase tables `feedback_runs`, `feedback_calls`, and `feedback_items`
 - Notion write path: MCP agent using Notion MCP + Supabase MCP
 

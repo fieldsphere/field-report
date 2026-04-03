@@ -66,7 +66,7 @@ In the MVP (first 10 calls), **drop items that lack a verbatim quote**. This kee
 ### Across pipeline re-runs
 
 - Each item gets a `dedupeKey`: `callId + ":" + sha256(normalize(verbatimQuote)).slice(0, 8)`
-- Skill 2 tracks processed call IDs in `gong-summary/data/processed-calls.json` to skip already-extracted calls on re-run.
+- Skill 2 tracks processed call IDs in `data/processed-calls.json` to skip already-extracted calls on re-run.
 - Skill 3 checks Notion for existing `Dedupe Key` before inserting.
 
 ## Long transcript handling

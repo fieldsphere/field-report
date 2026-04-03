@@ -2,7 +2,7 @@
 
 Contract for the output of Skill 2 (`gong-feedback-extractor`) and the input of Skill 3 (`notion-feedback-sync`).
 
-Written to `gong-summary/data/feedback.json`.
+Written to `data/feedback.json`.
 
 ## Schema
 

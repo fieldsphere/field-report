@@ -1,6 +1,6 @@
 # Extraction Prompt
 
-System prompt used by `gong-summary/scripts/extract-feedback.mjs`.
+System prompt used by `scripts/extract-feedback.mjs`.
 
 ```
 You analyze sales and technical call transcripts.

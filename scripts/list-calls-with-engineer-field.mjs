@@ -15,8 +15,8 @@
  * Optional: GONG_API_BASE_URL, PARTY_TITLE_SUBSTRING, DAYS, MATCH
  *
  * Usage:
- *   node --env-file=gong-summary/.env gong-summary/scripts/list-calls-with-engineer-field.mjs
- *   PARTY_TITLE_SUBSTRING="Solutions Architect" node --env-file=gong-summary/.env ...
+ *   node --env-file=.env scripts/list-calls-with-engineer-field.mjs
+ *   PARTY_TITLE_SUBSTRING="Solutions Architect" node --env-file=.env ...
  */
 
 import { Buffer } from "node:buffer";
@@ -188,7 +188,7 @@ async function main() {
   if (!KEY || !SECRET) {
     console.error(
       "Missing GONG_ACCESS_KEY or GONG_ACCESS_SECRET / GONG_ACCESS_KEY_SECRET. Set them in the environment or use:\n" +
-        "  node --env-file=gong-summary/.env gong-summary/scripts/list-calls-with-engineer-field.mjs",
+        "  node --env-file=.env scripts/list-calls-with-engineer-field.mjs",
     );
     process.exit(1);
   }

@@ -6,7 +6,7 @@ todos:
     content: "Freeze shared contracts before implementation: selected-calls.json shape, feedback.json shape, evidence requirements, taxonomy, and Notion schema"
     status: completed
   - id: npm-init
-    content: Initialize npm project in gong-summary/ and install ai, zod, and provider package
+    content: Initialize npm project in repo root and install ai, zod, and provider package
     status: pending
   - id: ai-access
     content: ""
@@ -55,7 +55,7 @@ flowchart LR
   llm -->|"feedback.json"| push
 ```
 
-Each skill is independently invokable via `/skill-name` in Agent chat. They communicate through JSON files in `gong-summary/data/` so any skill can be re-run or debugged alone.
+Each skill is independently invokable via `/skill-name` in Agent chat. They communicate through JSON files in `data/` so any skill can be re-run or debugged alone.
 
 ## MVP First
 
@@ -96,10 +96,10 @@ The main dependency is that Lanes A, B, and C should all consume the same agreed
 
 ## One-time setup (before any skill runs)
 
-### 1. npm project in `gong-summary/`
+### 1. npm project in repo root
 
 ```bash
-cd gong-summary && npm init -y
+cd field-report && npm init -y
 npm install ai @ai-sdk/gateway @vercel/oidc zod
 ```
 
@@ -112,7 +112,7 @@ vercel link            # create or connect a Vercel project
 vercel env pull .env.local   # gets VERCEL_OIDC_TOKEN
 ```
 
-Merge gateway env vars into the existing `gong-summary/.env`.
+Merge gateway env vars into the existing `.env`.
 
 ### 3. Notion MCP auth
 
@@ -124,7 +124,7 @@ Auth when prompted by the Notion MCP server so skill 3 can push rows.
 
 **Purpose**: Query Gong for calls in a date range where at least one participant has a specific title (default: "Field Engineer").
 
-**Location**: `gong-summary/.cursor/skills/gong/call-selector/`
+**Location**: `.cursor/skills/gong/call-selector/`
 
 ```
 gong-call-selector/
@@ -140,16 +140,16 @@ gong-call-selector/
 **SKILL.md key sections**:
 - When to use: "selecting Gong calls", "find calls with Field Engineers", "filter Gong calls by participant title"
 - Instructions: run `scripts/select-calls.sh` with optional env overrides (`DAYS`, `PARTY_TITLE_SUBSTRING`)
-- Output: writes `gong-summary/data/selected-calls.json` with call metadata + matched participants
+- Output: writes `data/selected-calls.json` with call metadata + matched participants
 - Sample: inline truncated example of the output JSON shape
 
 **`scripts/select-calls.sh`**:
 ```bash
 #!/usr/bin/env bash
-node --env-file=gong-summary/.env gong-summary/scripts/select-calls.mjs "$@"
+node --env-file=.env scripts/select-calls.mjs "$@"
 ```
 
-**`scripts/select-calls.mjs`**: Refactored from the existing [list-calls-with-engineer-field.mjs](gong-summary/scripts/list-calls-with-engineer-field.mjs) -- same Gong API logic, but writes structured JSON to `gong-summary/data/selected-calls.json` instead of stdout.
+**`scripts/select-calls.mjs`**: Refactored from the existing [list-calls-with-engineer-field.mjs](scripts/list-calls-with-engineer-field.mjs) -- same Gong API logic, but writes structured JSON to `data/selected-calls.json` instead of stdout.
 
 ---
 
@@ -157,7 +157,7 @@ node --env-file=gong-summary/.env gong-summary/scripts/select-calls.mjs "$@"
 
 **Purpose**: Given selected calls, fetch transcripts from Gong and use an LLM (via Vercel AI Gateway) to extract actionable customer feedback items (feature requests, bugs, complaints, friction, praise).
 
-**Location**: `gong-summary/.cursor/skills/gong/feedback-extractor/`
+**Location**: `.cursor/skills/gong/feedback-extractor/`
 
 ```
 gong-feedback-extractor/
@@ -173,11 +173,11 @@ gong-feedback-extractor/
 
 **SKILL.md key sections**:
 - When to use: "extract feedback from Gong calls", "identify feature requests", "find bugs from call transcripts"
-- Inputs: reads `gong-summary/data/selected-calls.json` (output of skill 1)
+- Inputs: reads `data/selected-calls.json` (output of skill 1)
 - Instructions: run `scripts/extract-feedback.sh`; requires Gong + AI Gateway env vars
 - LLM details: uses `generateText` with `Output.object()` (AI SDK v6) and a Zod schema
-- Output: writes `gong-summary/data/feedback.json` -- array of structured feedback items
-- Idempotency: tracks processed call IDs in `gong-summary/data/processed-calls.json`
+- Output: writes `data/feedback.json` -- array of structured feedback items
+- Idempotency: tracks processed call IDs in `data/processed-calls.json`
 
 **Feedback item schema** (each call produces 0-N items):
 - `callId`, `callTitle`, `callDate`, `gongUrl`
@@ -257,7 +257,7 @@ notion-feedback-sync/
 
 **SKILL.md key sections**:
 - When to use: "push feedback to Notion", "sync Gong feedback", "update Notion database"
-- Inputs: reads `gong-summary/data/feedback.json` (output of skill 2)
+- Inputs: reads `data/feedback.json` (output of skill 2)
 - Instructions: run `scripts/push-to-notion.sh` or invoke via agent which uses Notion MCP tools
 - Database schema: documented in `references/schema.md` (matches the feedback item schema)
 - Deduplication: skips rows where `callId` + normalized `verbatimQuote` hash already exists
@@ -289,7 +289,7 @@ Use a lightweight dedupe key:
 
 ## Data flow between skills
 
-All intermediate data lives in `gong-summary/data/`:
+All intermediate data lives in `data/`:
 
 | File | Producer | Consumer |
 |------|----------|----------|

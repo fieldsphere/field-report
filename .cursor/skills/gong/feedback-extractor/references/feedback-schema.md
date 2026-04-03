@@ -1,6 +1,6 @@
 # Feedback Output Schema
 
-Output file: `gong-summary/data/feedback.json`
+Output file: `data/feedback.json`
 
 Top-level object:
 

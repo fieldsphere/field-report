@@ -25,7 +25,7 @@ Optional:
 
 From repo root:
 
-`RUN_ID=<runId> CALL_ID=<callId> node gong-summary/scripts/extract-feedback-call.mjs`
+`RUN_ID=<runId> CALL_ID=<callId> node scripts/extract-feedback-call.mjs`
 
 ## Success criteria
 
@@ -40,6 +40,6 @@ From repo root:
 
 ## Guardrails
 
-- Do not write `gong-summary/data/feedback.json`.
-- Do not write `gong-summary/data/processed-calls.json`.
+- Do not write `data/feedback.json`.
+- Do not write `data/processed-calls.json`.
 - Do not modify any shared canonical files.

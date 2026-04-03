@@ -1,12 +1,12 @@
 ---
 name: Gong demo discovery app
-overview: 'Define a weekly “discovery run” workflow in gong-summary/ that surfaces novel demo patterns by structuring calls along four dimensions (teammate, call context, feature focus, and showcase style). Gong API access is available; credentials live only in local .env (never committed).'
+overview: 'Define a weekly “discovery run” workflow in this repo that surfaces novel demo patterns by structuring calls along four dimensions (teammate, call context, feature focus, and showcase style). Gong API access is available; credentials live only in local .env (never committed).'
 todos:
   - id: plan-location
-    content: 'Copy or save the approved plan to gong-summary/.cursor/plans/ (commit if team-visible) so it lives with the Gong summary work'
+    content: 'Copy or save the approved plan to .cursor/plans/ (commit if team-visible) so it lives with the Gong summary work'
     status: completed
   - id: schema
-    content: 'Define canonical fields for Teammate, Call, Feature/surface, Showcase style (+ optional Gong URL, week) as CSV/JSON in gong-summary'
+    content: 'Define canonical fields for Teammate, Call, Feature/surface, Showcase style (+ optional Gong URL, week) as CSV/JSON in field-report'
     status: pending
   - id: playbook
     content: 'Write a short weekly playbook: how to sample calls, tag consistency, what counts as one row'
@@ -19,7 +19,7 @@ todos:
     status: pending
 isProject: false
 ---
-# Gong weekly demo discovery (gong-summary)
+# Gong weekly demo discovery (field-report)
 
 ## What you are optimizing for
 
@@ -60,15 +60,15 @@ flowchart LR
 
 ## Where this plan file lives
 
-**Canonical copy:** this file — [`.cursor/plans/gong-demo-discovery.md`](gong-demo-discovery.md) under the `gong-summary/` app folder. A duplicate may also exist under Cursor’s artifacts path in some environments; treat **this** path as source of truth in the repo.
+**Canonical copy:** this file — [`.cursor/plans/gong-demo-discovery.md`](gong-demo-discovery.md) in the root. A duplicate may also exist under Cursor’s artifacts path in some environments; treat **this** path as source of truth in the repo.
 
 ## Where this lives in the repo
 
-- Primary home: **`gong-summary/`** — scoped app and data for the Gong demo discovery workflow. Parent repo may contain unrelated samples; keep Gong work **here** unless you explicitly want a monorepo-wide layout.
+- Primary home: **repo root** — scoped app and data for the Gong demo discovery workflow. Parent repo may contain unrelated samples; keep Gong work **here** unless you explicitly want a monorepo-wide layout.
 
 ## Gong API credentials (yes: use `.env` locally)
 
-- **Put secrets in a local `.env` file** (or your shell environment) and **never commit** the real values. Typical pattern: `gong-summary/.env`, loaded at runtime (e.g. `dotenv` in Node).
+- **Put secrets in a local `.env` file** (or your shell environment) and **never commit** the real values. Typical pattern: `.env`, loaded at runtime (e.g. `dotenv` in Node).
 - **Commit a `.env.example`** (or `env.example`) listing only **variable names** and short comments—no real keys. Example placeholders: Gong base URL if required, API key, client id/secret if Gong uses OAuth—match whatever Gong documents for your integration.
 - **[`.gitignore`](../.gitignore)** includes `.env` (and common variants) so accidental commits are blocked.
 - **CI / servers:** inject the same variable names via the host’s secret store, not by copying `.env` into the repo.
@@ -117,4 +117,4 @@ Once you have history:
 
 ## Success criteria
 
-- You can name **one artifact per week** (e.g. `gong-summary/data/2025-W13.csv`) and answer: *What new demo patterns appeared? Who tried something different on the same feature?*
+- You can name **one artifact per week** (e.g. `data/2025-W13.csv`) and answer: *What new demo patterns appeared? Who tried something different on the same feature?*

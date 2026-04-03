@@ -5,7 +5,7 @@ description: Select Gong calls where participant titles match a target role (def
 
 # Gong Call Selector
 
-Use this skill to build `gong-summary/data/selected-calls.json` from Gong calls.
+Use this skill to build `data/selected-calls.json` from Gong calls.
 
 ## When to Use
 
@@ -15,27 +15,27 @@ Use this skill to build `gong-summary/data/selected-calls.json` from Gong calls.
 
 ## Inputs
 
-- Env vars from `gong-summary/.env` and `gong-summary/.env.local`
+- Env vars from `.env` and `.env.local`
 - Optional overrides:
   - `DAYS` (default `7`)
   - `PARTY_TITLE_SUBSTRING` (default `Field Engineer`)
   - `LIMIT_CALLS` (default `0`, meaning no limit)
-  - `OUTPUT_PATH` (default `gong-summary/data/selected-calls.json`)
+  - `OUTPUT_PATH` (default `data/selected-calls.json`)
 
 ## Instructions
 
 1. From repo root, run:
-   - `bash gong-summary/.cursor/skills/gong/call-selector/scripts/select-calls.sh`
+   - `bash .cursor/skills/gong/call-selector/scripts/select-calls.sh`
 2. For MVP runs, set `LIMIT_CALLS=10`.
 3. Confirm output file exists and has:
    - `generatedAt`, `filter`, `totalCalls`, `matched`, and `calls[]`.
 
 ## Output Contract
 
-- Primary file: `gong-summary/data/selected-calls.json`
+- Primary file: `data/selected-calls.json`
 - Contract docs:
-  - `gong-summary/contracts/selected-calls.md`
-  - `gong-summary/.cursor/skills/gong/call-selector/references/sample-output.json`
+  - `contracts/selected-calls.md`
+  - `.cursor/skills/gong/call-selector/references/sample-output.json`
 
 ## Notes
 

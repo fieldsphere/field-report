@@ -2,7 +2,7 @@
 
 Contract for the output of Skill 1 (`gong-call-selector`) and the input of Skill 2 (`gong-feedback-extractor`).
 
-Written to `gong-summary/data/selected-calls.json`.
+Written to `data/selected-calls.json`.
 
 ## Schema
 

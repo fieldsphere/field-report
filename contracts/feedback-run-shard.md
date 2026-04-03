@@ -5,7 +5,7 @@ Contract for per-call files produced during weekly fan-out before canonical merg
 ## Directory layout
 
 ```
-gong-summary/data/runs/<runId>/
+data/runs/<runId>/
   manifest.json
   call-inputs/
     <callId>.json
@@ -25,8 +25,8 @@ gong-summary/data/runs/<runId>/
 {
   "generatedAt": "2026-03-30T20:40:00.000Z",
   "runId": "2026-03-30T20-40-00Z",
-  "runDir": "/absolute/path/to/gong-summary/data/runs/2026-03-30T20-40-00Z",
-  "selectedCallsPath": "/absolute/path/to/gong-summary/data/selected-calls.json",
+  "runDir": "/absolute/path/to/data/runs/2026-03-30T20-40-00Z",
+  "selectedCallsPath": "/absolute/path/to/data/selected-calls.json",
   "useProcessedCalls": false,
   "callLimit": null,
   "callsToProcess": 2,
@@ -34,8 +34,8 @@ gong-summary/data/runs/<runId>/
     {
       "callId": "4437983060289915613",
       "title": "Anaconda // Cursor",
-      "callInputPath": "/absolute/path/to/gong-summary/data/runs/2026-03-30T20-40-00Z/call-inputs/4437983060289915613.json",
-      "outputPath": "/absolute/path/to/gong-summary/data/runs/2026-03-30T20-40-00Z/calls/4437983060289915613.json"
+      "callInputPath": "/absolute/path/to/data/runs/2026-03-30T20-40-00Z/call-inputs/4437983060289915613.json",
+      "outputPath": "/absolute/path/to/data/runs/2026-03-30T20-40-00Z/calls/4437983060289915613.json"
     }
   ]
 }
