@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import { generateText, Output, gateway } from "ai";
 import { z } from "zod";
+import { buildSlackBlocks } from "./lib/slack-digest.mjs";
 import {
   createSupabaseServiceClient,
   writeSupabaseEnabled,
@@ -103,64 +104,6 @@ async function distillTopItems(items) {
   return output;
 }
 
-function severityEmoji(severity) {
-  if (severity === "High") return ":red_circle:";
-  if (severity === "Medium") return ":large_orange_circle:";
-  return ":white_circle:";
-}
-
-function typeTag(feedbackType) {
-  const tags = {
-    "Feature Request": "feature",
-    "Bug Report": "bug",
-    Friction: "friction",
-    Complaint: "complaint",
-    Praise: "praise",
-    Other: "other",
-  };
-  return tags[feedbackType] ?? feedbackType.toLowerCase();
-}
-
-function buildSlackBlocks(digest, itemCount) {
-  const blocks = [
-    {
-      type: "header",
-      text: { type: "plain_text", text: ":memo: Field Report Weekly Digest" },
-    },
-    {
-      type: "section",
-      text: { type: "mrkdwn", text: digest.intro },
-    },
-    { type: "divider" },
-  ];
-
-  for (const pick of digest.picks) {
-    blocks.push({
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: [
-          `*${pick.rank}.* ${severityEmoji(pick.severity)} \`${typeTag(pick.feedbackType)}\` ${pick.summary}`,
-          `>_"${pick.verbatimQuote}"_ — ${pick.customerAccount || "Unknown customer"}`,
-        ].join("\n"),
-      },
-    });
-  }
-
-  blocks.push({ type: "divider" });
-
-  const contextParts = [`${itemCount} total items from run \`${RUN_ID}\``];
-  if (NOTION_DATABASE_URL) {
-    contextParts.push(`<${NOTION_DATABASE_URL}|View full database in Notion>`);
-  }
-  blocks.push({
-    type: "context",
-    elements: [{ type: "mrkdwn", text: contextParts.join("  ·  ") }],
-  });
-
-  return blocks;
-}
-
 async function postToSlack(blocks) {
   if (!SLACK_WEBHOOK_URL) {
     throw new Error(
@@ -193,7 +136,12 @@ async function main() {
   console.error(`Loaded ${items.length} items. Distilling top ${SLACK_TOP_N}...`);
 
   const digest = await distillTopItems(items);
-  const blocks = buildSlackBlocks(digest, items.length);
+  const blocks = buildSlackBlocks({
+    digest,
+    itemCount: items.length,
+    notionDatabaseUrl: NOTION_DATABASE_URL,
+    runId: RUN_ID,
+  });
 
   if (DRY_RUN) {
     console.error("DRY_RUN=true — printing Slack payload without posting.");

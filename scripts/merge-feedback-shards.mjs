@@ -6,12 +6,16 @@ import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import {
   archivePathFor,
-  dedupeItems,
   loadJson,
   loadProcessedCalls,
   saveJson,
   saveProcessedCalls,
 } from "./lib/extract-feedback-core.mjs";
+import {
+  buildMergedPayload,
+  mapDbItemToPayloadItem,
+  mergedItems,
+} from "./lib/merge-feedback-payload.mjs";
 import {
   createSupabaseServiceClient,
   updateFeedbackRun,
@@ -54,32 +58,6 @@ function listJsonFiles(path) {
 
 function shardCallIds(shards) {
   return [...new Set(shards.map((shard) => shard.callId).filter(Boolean))];
-}
-
-function mergedItems(shards) {
-  const allItems = shards.flatMap((shard) =>
-    Array.isArray(shard.items) ? shard.items : [],
-  );
-  return dedupeItems(allItems);
-}
-
-function mapDbItemToPayloadItem(item) {
-  return {
-    callId: item.call_id,
-    callTitle: item.call_title ?? "",
-    callDate: item.call_date ? String(item.call_date).slice(0, 10) : "",
-    gongUrl: item.gong_url ?? "",
-    fieldEngineer: item.field_engineer ?? "",
-    customerAccount: item.customer_account ?? "",
-    feedbackType: item.feedback_type,
-    summary: item.summary,
-    verbatimQuote: item.verbatim_quote ?? "",
-    severity: item.severity ?? "Low",
-    evidenceSpeaker: item.evidence_speaker ?? "",
-    evidenceTimestamp: item.evidence_timestamp ?? "",
-    confidence: item.confidence ?? "Low",
-    dedupeKey: item.dedupe_key,
-  };
 }
 
 async function loadRunItemsFromSupabase(supabase) {
@@ -146,14 +124,13 @@ async function main() {
     );
   }
 
-  const payload = {
+  const payload = buildMergedPayload({
     generatedAt: new Date().toISOString(),
-    modelUsed: MODEL_ID,
+    modelId: MODEL_ID,
     runId: RUN_ID,
     callsProcessed: callsProcessedCount,
-    totalFeedbackItems: items.length,
     items,
-  };
+  });
 
   let archivedOutputPath = null;
   if (WRITE_LOCAL_JSON) {
