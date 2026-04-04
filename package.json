@@ -11,6 +11,7 @@
     "gong:prepare:run": "node scripts/prepare-feedback-run.mjs",
     "gong:extract:call": "node scripts/extract-feedback-call.mjs",
     "gong:merge:shards": "node scripts/merge-feedback-shards.mjs",
+    "feedback:analyze:run": "node scripts/analyze-feedback-run.mjs",
     "gong:weekly-feedback": "bash .cursor/skills/gong/weekly-feedback-run/scripts/run-weekly-feedback.sh",
     "notion:plugin-request": "node scripts/publish-plugin-request-to-notion.mjs",
     "notion:plugin-request:publish": "node scripts/publish-plugin-request-to-notion.mjs --title \"config driven plugins\"",

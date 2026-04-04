@@ -1,21 +1,25 @@
 #!/usr/bin/env node
 
 import { dirname, resolve } from "node:path";
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
-import { generateText, Output, gateway } from "ai";
-import { z } from "zod";
 import { buildSlackBlocks } from "./lib/slack-digest.mjs";
+import { analyzeRunThemes } from "./lib/run-theme-analysis.mjs";
 import {
   createSupabaseServiceClient,
+  upsertFeedbackRunSummary,
   writeSupabaseEnabled,
 } from "./lib/supabase.mjs";
+import { loadJson, saveJson } from "./lib/extract-feedback-core.mjs";
 
 dotenv.config({ path: ".env.local", quiet: true });
 dotenv.config({ path: ".env", quiet: true });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const projectRoot = resolve(__dirname, "..");
+const dataDir = resolve(projectRoot, "data");
 
 const RUN_ID = process.env.RUN_ID?.trim();
 if (!RUN_ID) {
@@ -25,41 +29,15 @@ if (!RUN_ID) {
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL?.trim();
 const SLACK_TOP_N = Math.max(1, Number(process.env.SLACK_TOP_N ?? "5") || 5);
 const MODEL_ID =
+  process.env.ANALYZE_MODEL ??
   process.env.DISTILL_MODEL ??
   process.env.EXTRACT_MODEL ??
   "anthropic/claude-sonnet-4-20250514";
+const ANALYSIS_PATH =
+  process.env.ANALYSIS_OUTPUT_PATH ?? resolve(dataDir, "runs", RUN_ID, "analysis.json");
+const REUSE_ANALYSIS = (process.env.REUSE_ANALYSIS ?? "true") !== "false";
 const DRY_RUN = (process.env.DRY_RUN ?? "false") === "true";
 const NOTION_DATABASE_URL = process.env.NOTION_DATABASE_URL?.trim() || "";
-
-const DigestSchema = z.object({
-  intro: z.string().describe("1-2 sentence narrative intro for the week"),
-  picks: z.array(
-    z.object({
-      rank: z.number(),
-      summary: z.string().describe("One-line actionable summary"),
-      feedbackType: z.string(),
-      severity: z.string(),
-      customerAccount: z.string(),
-      verbatimQuote: z.string().describe("Short representative quote"),
-    }),
-  ),
-});
-
-const SYSTEM_PROMPT = `
-You are a product insights analyst at Cursor. You receive a batch of customer
-feedback items extracted from Field Engineer calls and must distill the most
-important, actionable items for the product team.
-
-Pick the top ${SLACK_TOP_N} items. Rank by product impact — prioritize items that
-are blocking adoption or represent high-frequency pain, then high-severity bugs
-and high-confidence feature requests. De-emphasize praise and low-confidence items.
-
-Return:
-- intro: a 1-2 sentence narrative summary of the week's themes.
-- picks: the top ${SLACK_TOP_N} items ranked 1-${SLACK_TOP_N}, each with a terse
-  actionable summary, the feedback type, severity, customer account, and a short
-  representative verbatim quote.
-`.trim();
 
 async function loadRunItems(supabase) {
   const rows = [];
@@ -69,7 +47,7 @@ async function loadRunItems(supabase) {
     const { data, error } = await supabase
       .from("feedback_items")
       .select(
-        "summary, feedback_type, severity, verbatim_quote, evidence_speaker, confidence, call_title, call_date, gong_url, field_engineer, customer_account",
+        "dedupe_key, summary, feedback_type, severity, verbatim_quote, confidence, customer_account",
       )
       .eq("run_id", RUN_ID)
       .order("created_at", { ascending: true })
@@ -83,25 +61,43 @@ async function loadRunItems(supabase) {
   return rows;
 }
 
-async function distillTopItems(items) {
-  const itemLines = items.map(
-    (it, i) =>
-      `[${i + 1}] ${it.feedback_type} | ${it.severity} | ${it.customer_account || "Unknown"} | ${it.summary} | Quote: "${it.verbatim_quote}"`,
-  );
+function toAnalysisItem(item) {
+  return {
+    dedupeKey: item.dedupe_key,
+    summary: item.summary ?? "",
+    feedbackType: item.feedback_type ?? "Other",
+    severity: item.severity ?? "Low",
+    confidence: item.confidence ?? "Low",
+    verbatimQuote: item.verbatim_quote ?? "",
+    customerAccount: item.customer_account ?? "",
+  };
+}
 
-  const { output } = await generateText({
-    model: gateway(MODEL_ID),
-    system: SYSTEM_PROMPT,
-    output: Output.object({ schema: DigestSchema }),
-    prompt: [
-      `Run: ${RUN_ID}`,
-      `Total items: ${items.length}`,
-      "",
-      ...itemLines,
-    ].join("\n"),
+async function loadOrCreateAnalysis(supabase, items) {
+  if (REUSE_ANALYSIS && existsSync(ANALYSIS_PATH)) {
+    const payload = loadJson(ANALYSIS_PATH);
+    if (Array.isArray(payload?.themes) && payload.themes.length > 0) {
+      return payload;
+    }
+    console.error("Existing analysis file missing themes; regenerating analysis.");
+  }
+
+  const analysis = await analyzeRunThemes({
+    runId: RUN_ID,
+    items: items.map(toAnalysisItem),
+    modelId: MODEL_ID,
+    topN: SLACK_TOP_N,
   });
-
-  return output;
+  saveJson(ANALYSIS_PATH, analysis);
+  await upsertFeedbackRunSummary(supabase, {
+    run_id: RUN_ID,
+    generated_at: analysis.generatedAt,
+    total_items: analysis.totalItems,
+    top_n: analysis.themes.length,
+    intro: analysis.intro,
+    themes: analysis.themes,
+  });
+  return analysis;
 }
 
 async function postToSlack(blocks) {
@@ -133,9 +129,9 @@ async function main() {
     console.error("No feedback items found for this run. Nothing to post.");
     return;
   }
-  console.error(`Loaded ${items.length} items. Distilling top ${SLACK_TOP_N}...`);
+  console.error(`Loaded ${items.length} items. Preparing top ${SLACK_TOP_N} weekly themes...`);
 
-  const digest = await distillTopItems(items);
+  const digest = await loadOrCreateAnalysis(supabase, items);
   const blocks = buildSlackBlocks({
     digest,
     itemCount: items.length,
@@ -151,7 +147,7 @@ async function main() {
 
   await postToSlack(blocks);
   console.error(
-    `Posted digest with ${digest.picks.length} items to Slack for run ${RUN_ID}.`,
+    `Posted digest with ${digest.themes.length} themes to Slack for run ${RUN_ID}.`,
   );
 }
 

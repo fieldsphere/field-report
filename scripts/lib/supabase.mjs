@@ -6,7 +6,7 @@ function parseBool(value, defaultValue) {
 }
 
 export function writeSupabaseEnabled() {
-  return parseBool(process.env.WRITE_SUPABASE, false);
+  return parseBool(process.env.WRITE_SUPABASE, true);
 }
 
 export function writeLocalJsonEnabled() {
@@ -61,6 +61,13 @@ export async function upsertFeedbackItems(supabase, rows) {
   if (!rows.length) return;
   const { error } = await supabase
     .from("feedback_items")
-    .upsert(rows, { onConflict: "dedupe_key" });
+    .upsert(rows, { onConflict: "run_id,dedupe_key" });
   if (error) throw new Error(`Failed to upsert feedback items: ${error.message}`);
+}
+
+export async function upsertFeedbackRunSummary(supabase, row) {
+  const { error } = await supabase
+    .from("feedback_run_summaries")
+    .upsert(row, { onConflict: "run_id" });
+  if (error) throw new Error(`Failed to upsert feedback run summary ${row.run_id}: ${error.message}`);
 }

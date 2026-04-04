@@ -18,17 +18,21 @@ flowchart LR
     dedupe["Dedupe by Dedupe Key"]
     notionWrite["Create Notion rows via MCP"]
   end
-  subgraph phase4 [Phase4_SlackDigest]
-    distill["LLM ranks top N"]
-    slackPost["Post digest to Slack"]
+  subgraph phase4 [Phase4_RunThemeAnalysis]
+    cluster["LLM clusters weekly themes"]
+    score["Deterministic rank by frequency+severity"]
+  end
+  subgraph phase5 [Phase5_SlackDigest]
+    slackPost["Post top themes to Slack"]
   end
   listCalls --> filterCalls
   filterCalls -->|"selected-calls.json"| fetchTranscript
   fetchTranscript --> llmExtract
   llmExtract -->|"Supabase"| dedupe
   dedupe --> notionWrite
-  llmExtract -->|"Supabase"| distill
-  distill --> slackPost
+  llmExtract -->|"Supabase"| cluster
+  cluster --> score
+  score --> slackPost
 ```
 
 ## Weekly Agent Workflow Entry
@@ -80,7 +84,7 @@ Freeze interfaces so phases build and test independently.
 - **Speakers:** Exclude internal Cursor voices by title before LLM; drop rows attributed to excluded speakers.
 - **Taxonomy:** `Feature Request`, `Bug Report`, `Friction`, `Complaint`, `Praise`, `Other`.
 - **Evidence (per item):** Summary, verbatim quote, best-effort speaker and timestamp, confidence.
-- **Dedupe:** `dedupeKey = callId + ":" + hash(normalizedQuote)`; within a call and across re-runs. The `dedupe_key` constraint is globally unique — if the same quote surfaces in a later run, the upsert overwrites `run_id` and metadata on the existing row. Per-run item counts derived from `feedback_items` may therefore be lower than the extraction reported.
+- **Dedupe:** `dedupeKey = callId + ":" + hash(normalizedQuote)`; within a call and across re-runs. Supabase now upserts on `(run_id, dedupe_key)` to preserve run-level snapshots while remaining idempotent inside a run.
 - **Long transcripts:** Chunk with overlap, extract per chunk, merge by dedupe key.
 - **Output:** `data/feedback.json`; optional `data/processed-calls.json`.
 
@@ -102,14 +106,21 @@ Freeze interfaces so phases build and test independently.
 - **Dry-run:** Use `DRY_RUN=true node scripts/push-to-notion.mjs` to run the MCP sync flow without writes.
 - **Live sync:** Requires Notion MCP access plus Supabase MCP access.
 
-## Phase 4 - Slack Digest (`post-to-slack`)
+## Phase 4 - Weekly Theme Analysis (`analyze-feedback-run`)
 
 - **Input:** Supabase `feedback_items` rows for one `run_id`.
-- **Distillation:** Full batch sent to LLM (AI Gateway) with instructions to rank by product impact and pick the top N (default 5).
-- **Output:** Slack Block Kit message — narrative intro, ranked bullet list with severity/type badges and verbatim quotes, link to Notion database.
+- **Clustering:** Full run batch sent to LLM (AI Gateway) to build dynamic weekly theme buckets with supporting keys.
+- **Ranking:** Deterministic scoring over clustered themes (frequency + severity + confidence/type mix) to select top N (default 5).
+- **Output artifact:** `data/runs/<runId>/analysis.json` plus a Supabase `feedback_run_summaries` row for replay and auditing.
+- **Env:** `ANALYZE_MODEL` (falls back to `DISTILL_MODEL`/`EXTRACT_MODEL`), `ANALYZE_TOP_N`, `ANALYZE_MAX_PROMPT_ITEMS`.
+
+## Phase 5 - Slack Digest (`post-to-slack`)
+
+- **Input:** run analysis artifact (or fallback in-process analysis) for one `run_id`.
+- **Output:** Slack Block Kit message — intro, ranked top themes with repeat counts and severity mix, representative quote, and context footer.
 - **Delivery:** `POST` to `SLACK_WEBHOOK_URL` (Incoming Webhook).
 - **Dry-run:** `DRY_RUN=true` prints the payload to stdout without posting.
-- **Env:** `SLACK_WEBHOOK_URL` (required), `SLACK_TOP_N` (default 5), `DISTILL_MODEL` (falls back to `EXTRACT_MODEL`).
+- **Env:** `SLACK_WEBHOOK_URL` (required), `SLACK_TOP_N` (default 5), `ANALYSIS_OUTPUT_PATH`, `REUSE_ANALYSIS`.
 
 ## MVP and Scale-up
 

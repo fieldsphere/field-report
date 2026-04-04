@@ -16,6 +16,21 @@ export function typeTag(feedbackType) {
   return tags[feedbackType] ?? String(feedbackType ?? "other").toLowerCase();
 }
 
+function severityLabel(severityBreakdown = {}) {
+  const high = Number(severityBreakdown.High ?? 0);
+  const medium = Number(severityBreakdown.Medium ?? 0);
+  const low = Number(severityBreakdown.Low ?? 0);
+  return `H:${high} M:${medium} L:${low}`;
+}
+
+function dominantSeverity(severityBreakdown = {}) {
+  const high = Number(severityBreakdown.High ?? 0);
+  const medium = Number(severityBreakdown.Medium ?? 0);
+  if (high > 0) return "High";
+  if (medium > 0) return "Medium";
+  return "Low";
+}
+
 export function buildSlackBlocks({
   digest,
   itemCount,
@@ -34,14 +49,19 @@ export function buildSlackBlocks({
     { type: "divider" },
   ];
 
-  for (const pick of digest.picks) {
+  for (const theme of digest.themes ?? []) {
+    const primaryType = theme.topFeedbackTypes?.[0] ?? "Other";
+    const topAccounts = (theme.customerAccounts ?? []).slice(0, 3);
+    const accountLabel =
+      topAccounts.length > 0 ? topAccounts.join(", ") : "Unknown customer";
     blocks.push({
       type: "section",
       text: {
         type: "mrkdwn",
         text: [
-          `*${pick.rank}.* ${severityEmoji(pick.severity)} \`${typeTag(pick.feedbackType)}\` ${pick.summary}`,
-          `>_"${pick.verbatimQuote}"_ — ${pick.customerAccount || "Unknown customer"}`,
+          `*${theme.rank}.* ${severityEmoji(dominantSeverity(theme.severityBreakdown))} \`${typeTag(primaryType)}\` *${theme.label}* — ${theme.summary}`,
+          `• repeats: *${theme.repeatCount}*  • severity: *${severityLabel(theme.severityBreakdown)}*`,
+          `>_"${theme.representativeQuote}"_ — ${accountLabel}`,
         ].join("\n"),
       },
     });
